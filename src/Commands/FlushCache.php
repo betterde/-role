@@ -5,7 +5,7 @@ namespace Betterde\Role\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Redis;
 
-class FlushRoleCache extends Command
+class FlushCache extends Command
 {
     /**
      * The name and signature of the console command.
@@ -19,7 +19,7 @@ class FlushRoleCache extends Command
      *
      * @var string
      */
-    protected $description = 'Create and save role';
+    protected $description = 'Flush roles cache';
 
     /**
      * Create a new command instance.

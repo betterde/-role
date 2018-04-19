@@ -3,16 +3,19 @@
 namespace Betterde\Role\Models;
 
 use Exception;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Database\Eloquent\Model;
 use Betterde\Role\Contracts\RoleContract;
 use Betterde\Role\Exceptions\RoleException;
+use Betterde\Permission\Contracts\PermissionContract;
 
 /**
  * 系统角色模型
  *
  * Date: 18/04/2018
  * @author George
+ * @property string $code
  * @method static where($column, $operator = null, $value = null, $boolean = 'and')
  * @package Betterde\Role\Models
  */
@@ -141,6 +144,14 @@ class Role extends Model implements RoleContract
         try {
             $role = static::findOrFail($code);
             $role->update($attributes);
+
+            if (! $new_code = array_get($attributes, 'code') === $code) {
+                DB::table(config('authorization.relation.role_permission'))->where('role_code', $code)->update(['role_code' => $new_code]);
+                $value = Redis::connection(config('role.cache.database'))->hget(config('role.cache.prefix') . ':role_permissions', [$code]);
+                Redis::connection(config('role.cache.database'))->hdel(config('role.cache.prefix') . ':role_permissions', [$code]);
+                Redis::connection(config('role.cache.database'))->hset(config('role.cache.prefix') . ':role_permissions', array_get($attributes, 'code', $code), $value);
+            }
+
             Redis::connection(config('role.cache.database'))->hdel(config('role.cache.prefix') . ':roles', [$code]);
             Redis::connection(config('role.cache.database'))->hset(config('role.cache.prefix') . ':roles', array_get($attributes, 'code', $code), $role);
             return $role;
@@ -163,10 +174,46 @@ class Role extends Model implements RoleContract
         try {
             $role = self::findOrFail($code);
             $role->delete();
+            DB::table(config('authorization.relation.role_permission'))->where('role_code', $code)->delete();
             Redis::connection(config('role.cache.database'))->hdel(config('role.cache.prefix') . ':roles', [$code]);
+            Redis::connection(config('role.cache.database'))->hdel(config('role.cache.prefix') . ':role_permissions', [$code]);
             return true;
         } catch (Exception $exception) {
             throw new RoleException('删除角色失败', 500);
         }
+    }
+
+    /**
+     * 获取角色的所有权限
+     *
+     * Date: 19/04/2018
+     * @author George
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany|mixed
+     */
+    public function permissions()
+    {
+        return $this->belongsToMany(PermissionContract::class, config('authorization.relation.role_permission'), 'role_code', 'permission_code', 'code', 'code');
+    }
+
+    /**
+     * 获取角色的权限属性
+     *
+     * Date: 19/04/2018
+     * @author George
+     * @return array|mixed
+     */
+    public function getPermissionsAttribute()
+    {
+        if (config('authorization.cache.enable')) {
+            $permissions = json_decode(Redis::connection(config('authorization.cache.database'))
+                ->hget(config('authorization.cache.prefix') . ':role_permissions', $this->code));
+        } else {
+            $permissions = DB::table(config('authorization.relation.role_permission'))->select('permission_code')->get()->toArray();
+            if (! empty($permissions) && config('authorization.cache.enable')) {
+                Redis::connection(config('authorization.cache.database'))->hset(config('authorization.cache.prefix' . ':role_permissions'), $this->code, json_encode($permissions));
+            }
+        }
+
+        return $permissions;
     }
 }
