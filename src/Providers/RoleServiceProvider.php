@@ -4,6 +4,7 @@ namespace Betterde\Role\Providers;
 
 use Betterde\Role\Commands\CreateRole;
 use Betterde\Role\Commands\FlushRoleCache;
+use Betterde\Role\Commands\SetCache;
 use Betterde\Role\Contracts\RoleContract;
 use Illuminate\Support\ServiceProvider;
 
@@ -32,7 +33,8 @@ class RoleServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands([
                 CreateRole::class,
-                FlushRoleCache::class
+                SetCache::class,
+                FlushRoleCache::class,
             ]);
         }
 

@@ -3,23 +3,23 @@
 namespace Betterde\Role\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Redis;
+use Betterde\Role\Contracts\RoleContract;
 
-class FlushRoleCache extends Command
+class SetCache extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'role:flush';
+    protected $signature = 'role:cache';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Create and save role';
+    protected $description = 'Cache all role to memory';
 
     /**
      * Create a new command instance.
@@ -38,9 +38,8 @@ class FlushRoleCache extends Command
      */
     public function handle()
     {
-        $redis = Redis::connection(config('role.cache.database'));
-        $keys = $redis->hkeys(config('role.cache.prefix') . ':roles');
-        $redis->hdel(config('role.cache.prefix') . ':roles', $keys);
-        $this->info('Role cache is cleared');
+        $model = app(RoleContract::class);
+        $model::fetchAll();
+        $this->info('Congratulation! All roles is cached');
     }
 }
