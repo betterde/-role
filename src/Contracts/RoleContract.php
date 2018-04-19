@@ -61,4 +61,22 @@ interface RoleContract
      * @return mixed
      */
     public static function remove(string $code);
+
+    /**
+     * 获取角色的权限
+     *
+     * Date: 19/04/2018
+     * @author George
+     * @return mixed
+     */
+    public function permissions();
+
+    /**
+     * 定义属性访问器
+     *
+     * Date: 19/04/2018
+     * @author George
+     * @return mixed
+     */
+    public function getPermissionsAttribute();
 }

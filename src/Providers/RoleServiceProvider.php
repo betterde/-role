@@ -3,7 +3,7 @@
 namespace Betterde\Role\Providers;
 
 use Betterde\Role\Commands\CreateRole;
-use Betterde\Role\Commands\FlushRoleCache;
+use Betterde\Role\Commands\FlushCache;
 use Betterde\Role\Commands\SetCache;
 use Betterde\Role\Contracts\RoleContract;
 use Illuminate\Support\ServiceProvider;
@@ -34,7 +34,7 @@ class RoleServiceProvider extends ServiceProvider
             $this->commands([
                 CreateRole::class,
                 SetCache::class,
-                FlushRoleCache::class,
+                FlushCache::class,
             ]);
         }
 
