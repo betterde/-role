@@ -19,6 +19,11 @@
         "orchestra/testbench": "^3.6"
     },
     "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Betterde\\Role\\": "src"
+        }
+    },
     "extra": {
         "laravel": {
             "providers": [
