@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Redis;
 use Illuminate\Database\Eloquent\Model;
 use Betterde\Role\Contracts\RoleContract;
 use Betterde\Role\Exceptions\RoleException;
-use Betterde\Permission\Contracts\PermissionContract;
 
 /**
  * 系统角色模型
@@ -192,7 +191,7 @@ class Role extends Model implements RoleContract
      */
     public function permissions()
     {
-        return $this->belongsToMany(PermissionContract::class, config('authorization.relation.role_permission'), 'role_code', 'permission_code', 'code', 'code');
+        return $this->belongsToMany(config('permission.model'), config('authorization.relation.role_permission'), 'role_code', 'permission_code', 'code', 'code');
     }
 
     /**
